@@ -2,39 +2,32 @@ import streamlit as st
 import google.generativeai as genai
 from PyPDF2 import PdfReader
 
-# Configuración de la IA usando el secreto guardado
+# Conexión directa con el secreto de Streamlit
 try:
     genai.configure(api_key=st.secrets["llave_google"])
     model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
-    st.error("Error con la llave. Revisá los Secrets de Streamlit.")
+except:
+    st.error("Falta la llave en Secrets.")
 
-st.set_page_config(page_title="PsicoVisión AI", layout="wide")
 st.title("🧠 PsicoVisión AI")
 
-archivo = st.file_uploader("Subí tu PDF de estudio", type=["pdf"])
+archivo = st.file_uploader("Subí tu PDF", type=["pdf"])
 
 if archivo:
-    st.success("✅ Material cargado.")
-    tema = st.text_input("¿Qué tema querés que explique el profesor?")
+    st.success("✅ PDF cargado.")
+    tema = st.text_input("¿Qué tema explicamos?")
 
-    if st.button("🎙️ INICIAR CLASE"):
+    if st.button("INICIAR CLASE"):
         try:
-            # Lectura del PDF
+            # Lectura básica
             lector = PdfReader(archivo)
-            texto_completo = ""
-            for pagina in lector.pages[:5]: # Lee las primeras 5 páginas
-                texto_completo += pagina.extract_text()
+            texto = ""
+            for p in lector.pages[:3]:
+                texto += p.extract_text()
             
-            # Pedido al profesor
-            with st.spinner("El profesor está preparando la clase..."):
-                consigna = f"Actuá como un profesor experto. Basándote en este texto: {texto_completo}, explicá de forma clara: {tema}"
-                respuesta = model.generate_content(consigna)
-                
-                # Pizarrón de resultados
-                st.markdown("---")
-                st.subheader("👨‍🏫 Clase Magistral:")
-                st.info(respuesta.text)
+            # Respuesta del profesor
+            res = model.generate_content(f"Explicá esto como profesor: {tema}. Contexto: {texto}")
+            st.write(res.text)
         except Exception as e:
-            st.error(f"Hubo un problema: {e}")
+            st.error(f"Error: {e}")
             
