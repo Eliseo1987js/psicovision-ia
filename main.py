@@ -2,17 +2,15 @@ import streamlit as st
 from PyPDF2 import PdfReader
 import google.generativeai as genai
 
-# --- CONFIGURACIÓN DE SEGURIDAD ---
+# CONFIGURACIÓN SEGURA
 try:
-    # Busca la llave en el 'escondite' de Streamlit
+    # El programa busca la llave en el 'escondite' secreto
     llave = st.secrets["llave_google"]
     genai.configure(api_key=llave)
-    # Nombre de modelo estándar para evitar el error 404
     model = genai.GenerativeModel('gemini-1.5-flash')
-except Exception as e:
-    st.error("Revisá los Secrets en Streamlit. No se encuentra 'llave_google'.")
+except Exception:
+    st.error("Error: Configurá 'llave_google' en los Secrets de Streamlit.")
 
-# --- DISEÑO ---
 st.set_page_config(page_title="PsicoVisión AI", layout="wide")
 st.title("🧠 PsicoVisión AI: Tu Profesor de Psicología")
 
@@ -26,6 +24,7 @@ if archivo:
         try:
             lector = PdfReader(archivo)
             texto_pdf = ""
+            # Leemos solo 3 páginas para evitar saturar la memoria
             for pagina in lector.pages[:3]:
                 texto_pdf += pagina.extract_text()
             
@@ -41,5 +40,5 @@ if archivo:
                 </div>
                 """, unsafe_allow_html=True)
         except Exception as e:
-            st.error(f"Hubo un problema técnico: {e}")
+            st.error(f"Hubo un error técnico: {e}")
             
