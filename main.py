@@ -7,7 +7,9 @@ try:
     # Buscamos la llave en el 'escondite' de Streamlit
     llave = st.secrets["llave_google"]
     genai.configure(api_key=llave)
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    model = # Cambiamos el nombre del modelo a la versión base estable
+model = genai.GenerativeModel('gemini-1.5-flash')
+
 except Exception:
     st.error("Falta configurar la llave_google en los Secrets de Streamlit.")
 
