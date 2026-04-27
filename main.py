@@ -8,7 +8,7 @@ API_KEY = "AIzaSyA9PnK0oK4MOUaPBPpmsVcwr4rGMq-EI3k"
 
 if API_KEY != "PONER_ACA_LA_CLAVE_DESPUES":
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
 
 # --- 🎨 DISEÑO DEL PIZARRÓN ---
 st.set_page_config(page_title="PsicoVisión AI", layout="wide")
