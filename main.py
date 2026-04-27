@@ -2,27 +2,25 @@ import streamlit as st
 from PyPDF2 import PdfReader
 import google.generativeai as genai
 
-# --- CONFIGURACIÓN SEGURA ---
+# --- CONFIGURACIÓN DE SEGURIDAD ---
 try:
-    # Buscamos la llave en el 'escondite' de Streamlit
+    # Busca la llave en el 'escondite' de Streamlit
     llave = st.secrets["llave_google"]
     genai.configure(api_key=llave)
-    model = # Cambiamos el nombre del modelo a la versión base estable
-model = genai.GenerativeModel('gemini-1.5-flash')
-
-except Exception:
-    st.error("Falta configurar la llave_google en los Secrets de Streamlit.")
+    # Nombre de modelo estándar para evitar el error 404
+    model = genai.GenerativeModel('gemini-1.5-flash')
+except Exception as e:
+    st.error("Revisá los Secrets en Streamlit. No se encuentra 'llave_google'.")
 
 # --- DISEÑO ---
 st.set_page_config(page_title="PsicoVisión AI", layout="wide")
 st.title("🧠 PsicoVisión AI: Tu Profesor de Psicología")
 
-# --- LÓGICA ---
 archivo = st.file_uploader("Subí tu PDF de estudio", type=["pdf"])
 
 if archivo:
     st.success("✅ Material recibido.")
-    tema = st.text_input("Escribí el concepto a explicar:")
+    tema = st.text_input("¿Qué tema querés que explique el profesor?")
 
     if st.button("🎙️ EXPLICAR CLASE"):
         try:
@@ -31,8 +29,8 @@ if archivo:
             for pagina in lector.pages[:3]:
                 texto_pdf += pagina.extract_text()
             
-            with st.spinner("El profesor está escribiendo en el pizarrón..."):
-                consigna = f"Actuá como profesor de psicología. Basándote en: {texto_pdf}, explicá: {tema}"
+            with st.spinner("El profesor está analizando el texto..."):
+                consigna = f"Actuá como un profesor de psicología pedagógico. Basándote en este texto: {texto_pdf}, explicá de forma clara: {tema}"
                 resultado = model.generate_content(consigna)
                 
                 # Resultado con estilo de pizarrón
@@ -43,5 +41,5 @@ if archivo:
                 </div>
                 """, unsafe_allow_html=True)
         except Exception as e:
-            st.error(f"Error técnico: {e}")
+            st.error(f"Hubo un problema técnico: {e}")
             
