@@ -1,80 +1,50 @@
 import streamlit as st
 from PyPDF2 import PdfReader
+import google.generativeai as genai
 
-# --- ESTILOS DE PIZARRÓN Y EXAMEN ---
-st.set_page_config(page_title="PsicoVisión AI", page_icon="🧠", layout="wide")
+# --- 🔑 ESTA ES LA PARTE QUE VAMOS A COMPLETAR DESPUÉS ---
+# Por ahora lo dejamos vacío para que no tire error
+API_KEY = "AIzaSyA9PnK0oK4MOUaPBPpmsVcwr4rGMq-EI3k" 
+
+if API_KEY != "PONER_ACA_LA_CLAVE_DESPUES":
+    genai.configure(api_key=API_KEY)
+    model = genai.GenerativeModel('gemini-1.5-flash')
+
+# --- 🎨 DISEÑO DEL PIZARRÓN ---
+st.set_page_config(page_title="PsicoVisión AI", layout="wide")
 
 st.markdown("""
     <style>
-    .pizarro-box {
-        background-color: #1c2e26; color: #ffffff; padding: 30px;
-        border-radius: 20px; border: 12px solid #3e2723;
-        font-family: 'Courier New', Courier, monospace;
-        box-shadow: inset 0 0 40px #000; line-height: 1.7;
+    .pizarron {
+        background-color: #1c2e26; color: white; padding: 30px;
+        border: 10px solid #3e2723; border-radius: 20px;
+        font-family: 'Courier New', monospace; box-shadow: inset 0 0 50px black;
     }
-    .tiza-amarilla { color: #FFEB3B; font-weight: bold; font-size: 24px; border-bottom: 2px solid #FFEB3B; }
-    .tiza-roja { color: #FF5252; font-weight: bold; }
-    .tiza-verde { color: #B9F6CA; }
-    .examen-box {
-        background-color: #f0f2f6; color: #1f1f1f; padding: 20px;
-        border-radius: 10px; border-left: 5px solid #ff4b4b; margin-top: 20px;
-    }
+    .tiza { color: #FFEB3B; font-weight: bold; border-bottom: 2px solid #FFEB3B; }
     </style>
     """, unsafe_allow_html=True)
 
-def hablar(texto):
-    texto_limpio = texto.replace('"', '').replace("'", "")
-    js_code = f"""<script>
-    window.speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance("{texto_limpio}");
-    u.lang = 'es-AR'; u.rate = 1.0;
-    window.speechSynthesis.speak(u);
-    </script>"""
-    st.components.v1.html(js_code, height=0)
+st.title("🧠 PsicoVisión AI: Tu Profesor de Psicología")
 
-# --- INTERFAZ ---
-st.title("🧠 PsicoVisión AI: Clase y Evaluación")
+# --- 📚 LÓGICA DE CARGA ---
+archivo = st.file_uploader("Subí tu PDF de estudio", type=["pdf"])
 
-file = st.file_uploader("Subí tu PDF de estudio", type=["pdf"])
+if archivo:
+    st.success("👨‍🏫 Profesor: 'Ya tengo el material en la mano. ¿Qué querés aprender?'")
+    tema = st.text_input("Escribí el concepto o tema:")
 
-if file:
-    reader = PdfReader(file)
-    # Extraemos el texto (simulado para el ejemplo)
-    texto_leido = reader.pages[0].extract_text()[:500] 
-
-    tema = st.text_input("¿Qué tema específico querés que explique el profesor?")
-
-    if st.button("🎙️ EMPEZAR CLASE COMPLETA"):
-        # PARTE 1: LA CLASE EN EL PIZARRÓN
-        explicacion = f"Hoy vamos a analizar {tema}. Según el texto, este concepto se define como una estructura dinámica que..."
-        hablar(explicacion)
-        
-        st.markdown(f"""
-        <div class='pizarro-box'>
-            <div class='tiza-amarilla'>👨‍🏫 CLASE MAGISTRAL: {tema.upper()}</div>
-            <p>{explicacion}</p>
-            <p class='tiza-verde'>💡 Nota: Esta parte es fundamental para entender la bibliografía de la cursada.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.divider()
-
-        # PARTE 2: LA PRUEBA (SIMULACRO)
-        st.subheader("📝 Evaluación de Control")
-        st.write("Respondé estas preguntas para saber si estás preparado para el parcial:")
-        
-        with st.container():
-            st.markdown("""
-            <div class='examen-box'>
-                <strong>Pregunta 1:</strong> ¿Cómo se relaciona este concepto con la subjetividad del autor?<br><br>
-                <strong>Pregunta 2:</strong> ¿Cuáles son los tres pilares que menciona el texto sobre este proceso?
-            </div>
-            """, unsafe_allow_html=True)
+    if st.button("🎙️ EXPLICAR CLASE"):
+        if API_KEY == "PONER_ACA_LA_CLAVE_DESPUES":
+            st.warning("⚠️ Jonatan, falta pegar la API KEY en GitHub para que el profesor pueda hablar.")
+        else:
+            # Aquí el profesor lee y explica de verdad
+            lector = PdfReader(archivo)
+            texto_pdf = ""
+            for pagina in lector.pages[:5]:
+                texto_pdf += pagina.extract_text()
             
-            respuesta = st.text_area("Escribí tu respuesta aquí para que el profesor la califique:")
-            if st.button("Enviar para Calificar"):
-                st.success("✅ ¡Excelente razonamiento! Has captado la esencia del texto.")
-                hablar("Muy bien hecho. Tu respuesta demuestra que comprendiste el material.")
-
-else:
-    st.info("Subí el archivo para generar la clase y el examen automático.")
+            consigna = f"Basándote en este texto: {texto_pdf}, explicá de forma clara: {tema}"
+            with st.spinner("Escribiendo en el pizarrón..."):
+                resultado = model.generate_content(consigna)
+                st.markdown(f"<div class='pizarron'><h2 class='tiza'>CLASE:</h2><p>{resultado.text}</p></div>", unsafe_allow_html=True)
+                
